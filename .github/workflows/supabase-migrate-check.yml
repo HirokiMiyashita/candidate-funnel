@@ -1,0 +1,33 @@
+# プルリクエストで、マージ後に本番へ適用されるマイグレーションを確認する（実際には適用しない）
+#
+# 必要な設定は supabase-migrate.yml と同じ（Environment: production の Secret SUPABASE_DB_URL）。
+# フォークからのプルリクエストでは Secrets が渡されないため、このチェックはスキップされる。
+name: Supabase migrate check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    name: Dry run against production
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Show pending migrations
+        run: supabase db push --db-url "$SUPABASE_DB_URL" --dry-run

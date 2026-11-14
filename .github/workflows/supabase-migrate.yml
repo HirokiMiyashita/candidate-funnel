@@ -1,0 +1,59 @@
+# main にマージされたら、本番の Supabase にマイグレーションを適用する
+#
+# 必要な設定（GitHub の Settings → Environments → production → Secrets）
+#   SUPABASE_DB_URL … 本番 DB の接続文字列（Session pooler）
+#     Supabase ダッシュボードの「Connect」→「Session pooler」に表示される URL（ポート 5432）に
+#     DB のパスワードを入れたもの。例:
+#     postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres
+#     ※ GitHub Actions は IPv6 に対応していないため Direct connection（db.<ref>.supabase.co）ではなく Session pooler を使う
+#     ※ Transaction pooler（ポート 6543）はマイグレーションに向かないので使わない
+#     ※ パスワードに記号が含まれる場合は URL エンコードすること
+#
+# 注意: 適用されるのは supabase/migrations の SQL だけ。
+#       config.toml の認証設定やメールテンプレートは本番に反映されないので、Supabase のダッシュボードで設定すること。
+name: Supabase migrate (production)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+  # 手動実行（Actions タブから）
+  workflow_dispatch:
+
+# 同時に 2 つ走って適用が競合しないようにする（実行中のものは止めずに順番待ち）
+concurrency:
+  group: supabase-migrate-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  migrate:
+    name: Apply migrations
+    runs-on: ubuntu-latest
+    # Environment の「Required reviewers」を設定すると、適用前に承認を必須にできる
+    environment: production
+    timeout-minutes: 15
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Check settings
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::error::SUPABASE_DB_URL が設定されていません（Settings → Environments → production → Secrets）"
+            exit 1
+          fi
+
+      - name: Show pending migrations
+        run: supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
+
+      - name: Apply migrations
+        run: supabase db push --db-url "$SUPABASE_DB_URL"
