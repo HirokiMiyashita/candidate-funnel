@@ -1,6 +1,6 @@
 import { login } from "../actions";
 import { adminPath } from "@/lib/admin-path";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 import {
   Card,
   CardContent,
@@ -46,9 +46,9 @@ export default async function LoginPage({
           </div>
         </CardContent>
         <CardFooter className="mt-6 flex flex-col gap-3">
-          <Button type="submit" className="w-full">
+          <SubmitButton className="w-full" pendingText="ログイン中...">
             ログイン
-          </Button>
+          </SubmitButton>
           <p className="text-sm text-muted-foreground">
             管理画面は招待制です。アカウントがない方は、利用している方に招待を依頼してください。
           </p>

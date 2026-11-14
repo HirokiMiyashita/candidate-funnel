@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { adminPath } from "@/lib/admin-path";
 import { getAdminSession } from "@/server/admin-auth";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 import { signOut } from "./actions";
 
 // TODO: サイドバー等のナビゲーションを本実装（仮の骨組み）
@@ -21,9 +21,9 @@ export default async function DashboardLayout({
         <h1 className="text-xl font-semibold">このアカウントには管理画面の権限がありません</h1>
         <p className="text-sm text-muted-foreground">利用している方に招待を依頼してください。</p>
         <form action={signOut}>
-          <Button variant="outline" type="submit">
+          <SubmitButton variant="outline" pendingText="ログアウト中...">
             ログアウト
-          </Button>
+          </SubmitButton>
         </form>
       </div>
     );
@@ -63,9 +63,9 @@ export default async function DashboardLayout({
         <header className="flex h-14 items-center justify-between border-b px-4">
           <span className="text-sm text-muted-foreground">{user.email}</span>
           <form action={signOut}>
-            <Button variant="outline" size="sm" type="submit">
+            <SubmitButton variant="outline" size="sm" pendingText="ログアウト中...">
               ログアウト
-            </Button>
+            </SubmitButton>
           </form>
         </header>
         <main className="flex-1 p-6">{children}</main>

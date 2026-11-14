@@ -2,6 +2,7 @@ import Link from "next/link";
 import { adminPath } from "@/lib/admin-path";
 import { hasNoMembers } from "@/server/admin-auth";
 import { setupFirstAdmin } from "../actions";
+import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -59,9 +60,9 @@ export default async function SignupPage({
           </div>
         </CardContent>
         <CardFooter className="mt-6">
-          <Button type="submit" className="w-full">
+          <SubmitButton className="w-full" pendingText="送信中...">
             登録メールを送る
-          </Button>
+          </SubmitButton>
         </CardFooter>
       </form>
     </Card>

@@ -18,16 +18,48 @@ export type AdminMember = {
   isMe: boolean;
 };
 
-/** 招待メールを送り、メンバーとして登録する（最初の 1 人の登録でも使う） */
+/** メールアドレスでアカウントを探す */
+async function findAuthUserByEmail(admin: ReturnType<typeof createAdminClient>, email: string) {
+  const { data, error } = await admin.auth.admin.listUsers({ perPage: 1000 });
+  if (error) {
+    console.error(error);
+    return null;
+  }
+  return data.users.find((u) => u.email?.toLowerCase() === email) ?? null;
+}
+
+/**
+ * 招待メールを送り、メンバーとして登録する（最初の 1 人の登録でも使う）。
+ * 以前の招待が途中で失敗して「アカウントだけあってメンバーではない」状態なら、作り直して招待し直す。
+ */
 export async function inviteAdminMember(email: string, invitedBy: string | null, role: MemberRole) {
   const admin = createAdminClient();
   const redirectTo = `${await getSiteOrigin()}${adminPath("/auth/confirm")}`;
 
-  const { data, error } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo });
-  if (error) {
-    console.error(error);
-    if (error.code === "email_exists" || error.status === 422) {
+  let { data, error } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo });
+
+  if (error && (error.code === "email_exists" || error.status === 422)) {
+    const existing = await findAuthUserByEmail(admin, email);
+    const { data: member } = existing
+      ? await admin.from("admin_members").select("user_id").eq("user_id", existing.id).maybeSingle()
+      : { data: null };
+
+    if (existing && !member && !existing.email_confirmed_at) {
+      // メンバー登録まで終わらなかった招待中のアカウント → 消して招待し直す
+      await admin.auth.admin.deleteUser(existing.id);
+      ({ data, error } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo }));
+    } else {
       throw new ORPCError("CONFLICT", { message: "このメールアドレスはすでに登録されています" });
+    }
+  }
+
+  if (error || !data?.user) {
+    console.error(error);
+    if (error?.code === "over_email_send_rate_limit" || error?.status === 429) {
+      throw new ORPCError("TOO_MANY_REQUESTS", {
+        message:
+          "メールの送信回数の上限に達しました。しばらく待ってから再度お試しください（本番では独自の SMTP の設定をおすすめします）",
+      });
     }
     throw new ORPCError("INTERNAL_SERVER_ERROR", { message: "招待メールを送れませんでした" });
   }
@@ -37,6 +69,8 @@ export async function inviteAdminMember(email: string, invitedBy: string | null,
     .insert({ user_id: data.user.id, email, invited_by: invitedBy, role });
   if (insertError) {
     console.error(insertError);
+    // メンバー登録に失敗したら、作ったアカウントも消して「アカウントだけ残る」状態を作らない
+    await admin.auth.admin.deleteUser(data.user.id);
     throw new ORPCError("INTERNAL_SERVER_ERROR", { message: "メンバーを登録できませんでした" });
   }
 }

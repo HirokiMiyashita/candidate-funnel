@@ -93,7 +93,7 @@ LP（`/`）で転職希望者が氏名・生年月日・電話番号・都道府
 
 - **権限の種類**: オーナー（最初に登録した 1 人）／管理者／一般。違いは「メンバー」画面で他のメンバーを削除できるかどうかだけ（オーナー・管理者は可、オーナーは誰からも削除不可）。招待時に管理者か一般を選び、一般の人は「一般」のみ招待可能。オーナーは参加済みの管理者にオーナー権限を譲渡でき、元のオーナーは管理者になる（`public.transfer_admin_ownership()`）
 - **アクセス**: `public.admin_members` に登録された人だけが管理画面のデータに触れられます（RLS は `public.is_admin_member()` で判定）。Auth のアカウントがあるだけでは何も見えません
-- **招待メール**: `supabase/templates/invite.html`（ローカルは `config.toml` の `[auth.email.template.invite]`）。本番は Supabase ダッシュボードの Email Templates に同じ内容を設定し、送信元に独自 SMTP を設定すること（標準の送信は回数制限が厳しいため）
+- **招待メール**: `supabase/templates/invite.html`（ローカルは `config.toml` の `[auth.email.template.invite]`）。**本番は Supabase ダッシュボードの Authentication → Emails → Invite user に同じ内容を必ず設定する**（標準の文面のままだとリンクが機能しない）。リンク先の `/auth/confirm` はボタンを押したときに確認する（メールのセキュリティ機能による自動アクセスで 1 回限りのリンクが使われないように）。また、送信元に独自 SMTP を設定すること（標準の送信は回数制限が厳しいため）
 - **本番の設定**: Supabase ダッシュボードで「Allow new users to sign up」だけをオフにすること。Email プロバイダー自体はオンのまま（オフにするとログインもできなくなる）。ローカルの `config.toml` では `[auth] enable_signup = false`、`[auth.email] enable_signup = true` が同じ意味
 
 ## 応募のステータス

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { adminPath } from "@/lib/admin-path";
 import { getAdminSession } from "@/server/admin-auth";
 import { setPassword } from "../actions";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 import {
   Card,
   CardContent,
@@ -43,9 +43,9 @@ export default async function SetPasswordPage({
           </div>
         </CardContent>
         <CardFooter className="mt-6">
-          <Button type="submit" className="w-full">
+          <SubmitButton className="w-full" pendingText="設定中...">
             設定して管理画面へ
-          </Button>
+          </SubmitButton>
         </CardFooter>
       </form>
     </Card>
