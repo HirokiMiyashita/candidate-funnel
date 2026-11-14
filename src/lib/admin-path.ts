@@ -18,9 +18,29 @@ export const INTERNAL_ADMIN_PREFIX = "/admin";
 /** 推測されにくさを担保するための最低文字数 */
 const MIN_SEGMENT_LENGTH = 16;
 
+let warned = false;
+
+/** 管理画面が使えない理由をサーバーのログに 1 回だけ出す（値そのものは出さない） */
+function warnOnce(reason: string) {
+  if (warned) return;
+  warned = true;
+  console.warn(`[admin-path] 管理画面は無効です: ${reason}`);
+}
+
 export function getAdminSegment(): string | null {
-  const segment = process.env.ADMIN_PATH_SEGMENT;
-  if (!segment || segment.length < MIN_SEGMENT_LENGTH || !/^[A-Za-z0-9_-]+$/.test(segment)) {
+  const raw = process.env.ADMIN_PATH_SEGMENT;
+  if (raw === undefined || raw === "") {
+    warnOnce("環境変数 ADMIN_PATH_SEGMENT が設定されていません（設定後は再デプロイが必要）");
+    return null;
+  }
+  // ホスティングの管理画面で引用符や前後の空白ごと貼り付けた場合も受け付ける
+  const segment = raw.trim().replace(/^["']|["']$/g, "").replace(/^\/+|\/+$/g, "");
+  if (segment.length < MIN_SEGMENT_LENGTH) {
+    warnOnce(`ADMIN_PATH_SEGMENT が短すぎます（${segment.length} 文字。${MIN_SEGMENT_LENGTH} 文字以上が必要）`);
+    return null;
+  }
+  if (!/^[A-Za-z0-9_-]+$/.test(segment)) {
+    warnOnce("ADMIN_PATH_SEGMENT に使えない文字が含まれています（英数字・-・_ のみ）");
     return null;
   }
   return segment;
