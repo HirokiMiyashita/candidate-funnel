@@ -18,7 +18,7 @@ export function normalizePhone(value: string): string {
 
 const MIN_AGE = 15;
 
-function isValidBirthDate(value: string) {
+export function isValidBirthDate(value: string) {
   if (!isValidDateString(value)) return false;
   const today = jstDateString(new Date());
   const latest = `${Number(today.slice(0, 4)) - MIN_AGE}${today.slice(4)}`;
@@ -27,7 +27,7 @@ function isValidBirthDate(value: string) {
 
 const timeSlots = new Set(interviewTimeSlots());
 
-function isSelectableInterviewSlot(value: string) {
+export function isSelectableInterviewSlot(value: string) {
   const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}):00\+09:00$/.exec(value);
   if (!match) return false;
   const [, date, time] = match;
@@ -85,6 +85,8 @@ export const entryInputSchema = z
     attribution: attributionSchema.optional(),
     /** LP の計測の訪問者 ID（LINE・電話ボタンの押下と応募をつなげるため） */
     visitorId: z.uuid().optional(),
+    /** LINE から送った LP のリンクに付く使い捨てトークン（保存時に LINE とつなぐ） */
+    lineLinkToken: z.string().max(200).optional(),
   })
   .refine((d) => d.interviewAt1 !== d.interviewAt2, {
     message: "第1希望と異なる日時を選択してください",

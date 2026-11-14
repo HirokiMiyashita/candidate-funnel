@@ -165,6 +165,27 @@ npm run db:types                  # DB の型を src/lib/supabase/database.types
 npx shadcn@latest add <component> # shadcn/ui コンポーネント追加
 ```
 
+## LINE 連携（自動返信）
+
+LINE の公式アカウントに友だち追加した人と、電話番号で応募データを照合します。未登録の人は LINE のトークの中、または LP のフォームで登録できます。
+
+```
+友だち追加 → 電話番号を送ってもらう → 照合
+  ├ 見つかった → LINE とつなぐ（candidates.line_user_id）
+  ├ 別の LINE で連携済み → 担当者からの連絡を案内
+  └ 見つからない → ［LINE で入力］氏名 → 生年月日 → 都道府県 → 面談の希望日時×2 → 同意 → 確認 → 登録
+                   ［フォームで入力］LP のリンク（utm_source=line&utm_medium=line_chat&utm_campaign=unregistered&lt=…）
+                                     → フォームで保存すると自動で LINE とつながる
+```
+
+- **Webhook**: `POST /api/line/webhook`（署名を確認）。LINE Developers の Messaging API 設定に `https://<ドメイン>/api/line/webhook` を登録し、Webhook の利用をオン
+- **環境変数**: `LINE_CHANNEL_SECRET`、`LINE_CHANNEL_ACCESS_TOKEN`（サーバー専用）
+- **LINE Official Account Manager**: 応答設定の「あいさつメッセージ」「応答メッセージ」はオフ（二重送信を防ぐ）。手動のチャットとは併用可
+- **文面の編集**: 管理画面の「LINE の自動返信」。場面ごとの文面を編集でき、空にすると返信しない場面もある（連携済みの人からのメッセージ）
+- **シミュレーター**: 同じ画面の右側。本番と同じ処理で会話を試せる（電話番号の照合は実データを読むだけで、連携・登録はしない）。ngrok などが無くてもローカルで確認できる
+- **会話の状態**: `public.line_users`（電話番号待ち・入力中・連携済みなど）。文面は `public.line_message_templates`、場面の定義と初期値は `src/server/line/templates.ts`、流れは `src/server/line/flow.ts`
+- **安全対策**: 電話番号を試せるのは 5 回まで（他人の番号を総当たりで探られないため）。照合結果の返信に氏名などは含めない。すでに別の LINE とつながっている人は上書きしない
+
 ## マイグレーションの自動適用（GitHub Actions）
 
 - `.github/workflows/supabase-migrate.yml`: `main` に `supabase/migrations/**` の変更がマージされたら本番に `supabase db push` で適用（Actions タブから手動実行も可）

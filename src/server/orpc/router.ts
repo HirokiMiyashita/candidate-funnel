@@ -3,6 +3,7 @@ import { applicationsRouter } from "./routers/applications";
 import { candidatesRouter } from "./routers/candidates";
 import { entryRouter } from "./routers/entry";
 import { healthRouter } from "./routers/health";
+import { lineRouter } from "./routers/line";
 import { lpContentRouter } from "./routers/lp-content";
 import { meRouter } from "./routers/me";
 import { membersRouter } from "./routers/members";
@@ -33,6 +34,8 @@ export const router = {
   lpContent: lpContentRouter,
   /** LP の流入元ごとの集計（ログイン必須） */
   analytics: analyticsRouter,
+  /** LINE の自動返信の文面・シミュレーター（ログイン必須） */
+  line: lineRouter,
 };
 
 export type AppRouter = typeof router;

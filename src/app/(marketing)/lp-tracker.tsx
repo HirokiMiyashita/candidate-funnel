@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { track } from "@/lib/tracking/client";
+import { getLineLinkToken, track } from "@/lib/tracking/client";
 import type { TrackEventType, TrackPlacement } from "@/lib/tracking/schema";
 
 // 開発時の二重実行（React Strict Mode）で訪問が 2 回記録されないようにする
@@ -16,6 +16,8 @@ export function LpTracker() {
     if (!pageViewSent) {
       pageViewSent = true;
       track("page_view");
+      // LINE から送ったリンク（?lt=...）で来た場合は、フォーム保存まで保持しておく
+      getLineLinkToken();
     }
 
     function onClick(event: MouseEvent) {

@@ -110,3 +110,22 @@ export function track(type: TrackEventType, placement?: TrackPlacement) {
     headers: { "Content-Type": "application/json" },
   }).catch(() => {});
 }
+
+const LINE_LINK_KEY = "cf_line_link";
+
+/**
+ * LINE から送った LP のリンク（?lt=...）のトークン。
+ * ページ内を移動しても失われないよう、このタブの間は保持する。
+ */
+export function getLineLinkToken(): string | undefined {
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get("lt");
+    if (fromUrl) {
+      sessionStorage.setItem(LINE_LINK_KEY, fromUrl.slice(0, 200));
+      return fromUrl.slice(0, 200);
+    }
+    return sessionStorage.getItem(LINE_LINK_KEY) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}

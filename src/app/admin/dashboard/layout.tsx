@@ -48,6 +48,9 @@ export default async function DashboardLayout({
           <Link href={adminPath("/dashboard/lp")} className="rounded-md px-2 py-1.5 hover:bg-sidebar-accent">
             LP の内容
           </Link>
+          <Link href={adminPath("/dashboard/line")} className="rounded-md px-2 py-1.5 hover:bg-sidebar-accent">
+            LINE の自動返信
+          </Link>
           <Link href={adminPath("/dashboard/statuses")} className="rounded-md px-2 py-1.5 hover:bg-sidebar-accent">
             ステータスの編集
           </Link>

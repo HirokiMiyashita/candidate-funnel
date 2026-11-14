@@ -80,6 +80,7 @@ export const entryRouter = {
       p_interview_at_2: input.interviewAt2,
       p_visitor_id: input.visitorId ?? null,
       p_attribution: input.attribution ?? {},
+      p_line_link_token_hash: input.lineLinkToken ? hashEditToken(input.lineLinkToken) : null,
     });
 
     if (error) {

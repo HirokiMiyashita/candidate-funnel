@@ -13,3 +13,27 @@ export const PREFECTURES = [
 export function prefectureName(code: number): string {
   return PREFECTURES[code - 1] ?? "不明";
 }
+
+/** 地方区分（LINE の選択ボタン用） */
+export const PREFECTURE_REGIONS: { key: string; name: string; codes: number[] }[] = [
+  { key: "hokkaido", name: "北海道", codes: [1] },
+  { key: "tohoku", name: "東北", codes: [2, 3, 4, 5, 6, 7] },
+  { key: "kanto", name: "関東", codes: [8, 9, 10, 11, 12, 13, 14] },
+  { key: "chubu", name: "中部", codes: [15, 16, 17, 18, 19, 20, 21, 22, 23] },
+  { key: "kinki", name: "近畿", codes: [24, 25, 26, 27, 28, 29, 30] },
+  { key: "chugoku", name: "中国", codes: [31, 32, 33, 34, 35] },
+  { key: "shikoku", name: "四国", codes: [36, 37, 38, 39] },
+  { key: "kyushu", name: "九州・沖縄", codes: [40, 41, 42, 43, 44, 45, 46, 47] },
+];
+
+/** 「大阪」「大阪府」「東京」などの入力から都道府県コードを探す */
+export function findPrefectureCode(input: string): number | null {
+  const text = input.trim().replace(/\s/g, "");
+  if (!text) return null;
+  const index = PREFECTURES.findIndex((name) => {
+    if (name === text) return true;
+    if (name === "北海道") return text === "北海";
+    return name.slice(0, -1) === text;
+  });
+  return index >= 0 ? index + 1 : null;
+}

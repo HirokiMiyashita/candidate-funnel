@@ -12,7 +12,7 @@ import { toJstIso } from "@/lib/entry/datetime";
 import { entryInputSchema } from "@/lib/entry/schema";
 import type { EntryFormInitial } from "@/lib/entry/types";
 import { orpc } from "@/lib/orpc/client";
-import { getAttribution, getVisitorId, track } from "@/lib/tracking/client";
+import { getAttribution, getLineLinkToken, getVisitorId, track } from "@/lib/tracking/client";
 import { PREFECTURES } from "@/lib/prefectures";
 
 type FieldName =
@@ -95,6 +95,7 @@ export function EntryForm({
       website: values.website,
       attribution: getAttribution(),
       visitorId: getVisitorId(),
+      lineLinkToken: getLineLinkToken(),
     });
 
     if (!result.success) {
