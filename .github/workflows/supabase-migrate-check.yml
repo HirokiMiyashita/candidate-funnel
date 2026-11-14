@@ -30,4 +30,4 @@ jobs:
           version: latest
 
       - name: Show pending migrations
-        run: supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
+        run: supabase db push --remote="$SUPABASE_DB_URL" --dry-run

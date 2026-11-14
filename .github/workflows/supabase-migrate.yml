@@ -53,7 +53,8 @@ jobs:
           fi
 
       - name: Show pending migrations
-        run: supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
+        run: supabase db push --remote="$SUPABASE_DB_URL" --dry-run
 
+      # CI では確認のプロンプトに答えられないため --yes で適用する（main へのマージ自体が承認）
       - name: Apply migrations
-        run: supabase db push --db-url "$SUPABASE_DB_URL"
+        run: supabase db push --remote="$SUPABASE_DB_URL" --yes
